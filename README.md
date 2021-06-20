@@ -1,6 +1,7 @@
 # java_timeslots
-<h2>Output</h2>
 <h3>Allocated Time: 07:00-09:00, 11:00-13:00, 14:00-16:00, 16:30-18:00</h3>
+
+<h2>Output</h2>
 <br>       
 free time slots 06:00 AM - 07:00 AM
 <br>
