@@ -7,111 +7,121 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class Main {
-    String day = "2014-11-25";
+    static String date_to_get_timeslots = "";
+    static String day_diff_string = null;
+    static String format_duration_string;
+    static String free_duration_string;
+    static String time_day_begins;
+    static String time_day_ends;
 
-    String[] start_time = { "07:00", "11:00", "14:00", "16:30" };
-    String[] totime = { "09:00", "13:00", "16:00", "18:00" };
 
-    DateTimeFormatter formatter;
-    LocalDateTime localDateTime_day_to;
-    LocalDateTime localDateTime_day_from;
-    Duration day_diff = null;
-    long diff_mili = 0;
-    String day_diff_string = null;
-    DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-    DateFormat format2 = new SimpleDateFormat("hh:mm a");
-    List<Date> intervals = new ArrayList<>(25);
+    static DateTimeFormatter formatter;
+    static LocalDateTime localDateTime_day_to;
+    static LocalDateTime localDateTime_day_from;
+    static Duration day_diff = null;
+    static long diff_mili = 0;
+
+    static DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    static DateFormat format2 = new SimpleDateFormat("hh:mm a");
+    static List<Date> all_day_slots = new ArrayList<>(25);
+    static List<String> free_timeSLOTS = new ArrayList<>();
+    static String[] allocated_task_start_time;
+    static String[] allocated_task_stop_time;
+    static Duration freetime_duration;
+    static Duration ddmili_duration;
 
     public static void main(String[] args) throws ParseException {
-
-
+        allocated_task_start_time = new String[]{"07:00", "11:00", "14:00", "16:30"};
+        allocated_task_stop_time = new String[]{"09:00", "13:00", "16:00", "18:00"};
+        Input();
     }
-    private void Input(){
+
+    private static void Input() throws ParseException {
         System.out.println("Enter Date (e.g. 2022-09-01)");
-        String date_to_get_timeslots  = new Scanner(System.in).nextLine();
+        date_to_get_timeslots = new Scanner(System.in).nextLine();
 
-        System.out.println("What time does te day begins?  (e.g. 06:00)");
+        System.out.println("What time does the day begins?  (e.g. 08:00)");
 
-        String time_day_begins  = new Scanner(System.in).nextLine();
-        System.out.println("What time does te day end?  (e.g. 17:00)");
+        time_day_begins = new Scanner(System.in).nextLine();
 
-        String time_day_ends  = new Scanner(System.in).nextLine();
+        System.out.println("What time does the day end?  (e.g. 17:00)");
+        time_day_ends = new Scanner(System.in).nextLine();
 
-    }
-    private void Intervals(){
-        String day_from = "2014-11-25 06:00", day_to = "2014-11-25 20:00";// the start of the day to the end of the day
-
-
-        Date start_time_day = format.parse(day_from);// convaert day start to date
-        Date end_time_day = format.parse(day_to); // convert dya end to date
-        Date first_task_date = format.parse(day + start_time[0]);
-
-        String first_task_date_string = format2.format(first_task_date); // convert date day start to string
-        String setd2 = format.format(end_time_day); // convert date day end to string
-
-        // Date dstd2=format2.parse(sstd2);
-        // Date detd2=format2.parse(setd2);
-
-        intervals.add(start_time_day); // add date start day to list intervals
+        Intervals(date_to_get_timeslots, time_day_begins, time_day_ends);
     }
 
-    private void Compute(Date start_time_day,Date end_time_day){
-        Date first_task_date = format.parse(day + start_time[0]);
+    private static void Intervals(String date_to_get_timeslots, String time_day_begins, String time_day_ends) throws ParseException {
+        String date_time_day_begins = date_to_get_timeslots + " " + time_day_begins;// Time day starts
+        String date_time_day_ends = date_to_get_timeslots + " " + time_day_ends;
+        // Time day ends
 
-        String first_task_date_string = format2.format(first_task_date); // convert date day start to string
-        String setd2 = format.format(end_time_day); // convert date day end to string
+
+        Date day_start_time = format.parse(date_time_day_begins);// convert day start to date
+        Date day_end_time = format.parse(date_time_day_ends); // convert dya end to date
+
+        all_day_slots.add(day_start_time); // add day begin time at the beginning of the day
+
+        Compute(day_start_time, day_end_time, date_time_day_begins, date_time_day_ends);
+    }
+
+    private static void Compute(Date day_start_time, Date day_end_time, String date_time_day_begins, String date_time_day_ends) throws ParseException {
+        Date first_allocated_task_date = format.parse(date_to_get_timeslots + " " + allocated_task_start_time[0]);
+
+        String first_allocated_task_date_string = format2.format(first_allocated_task_date); // convert date day start to string
+        String day_end_time_string = format.format(day_end_time); // convert date day end to string
 
         Calendar cal = Calendar.getInstance(), cal2 = Calendar.getInstance();
-        cal.setTime(start_time_day);
-        Date first_task_time = format.parse(day + start_time[0]);
+        cal.setTime(day_start_time);
+        Date first_task_time = format.parse(date_to_get_timeslots + " " + allocated_task_start_time[0]);
         cal2.setTime(first_task_time);
 
-        // if day start ie 7:00 am is less than first task time 8:00, have a free time
+        // if day start ie 7:00 am is less than first task time 8:00, set as available timeslots and
+        // add to array freetimeslots
         // slot of one hour from 7-8
         if (cal.before(cal2)) {
-            String first_task_time_string = format2.format(start_time_day);
-
-            System.out.println("free time slots " + first_task_time_string + " - " + first_task_date_string);
+            String first_task_time_string = format2.format(day_start_time);
+            free_timeSLOTS.add(first_task_time_string + " - " + first_allocated_task_date_string);
         }
 
-        while (cal.getTime().before(end_time_day)) { // loop through every minute from day start time to day end time
+        // Get each minute between day begins and day ends
+        while (cal.getTime().before(day_end_time)) {
             // and add it to the list intervals
-            int minute = cal.get(Calendar.MINUTE);
             cal.add(Calendar.MINUTE, 1);
-            intervals.add(cal.getTime());
+            all_day_slots.add(cal.getTime());
         }
 
-        for (int i = 0; i < start_time.length; i++) {
+        // loop through allocated time
+        // get all one hour time slots between day_begins and  i.e. 7-9 (2 timeslots available)
+        // Add all avaiable timeslots after day start time
 
-            Date date2 = format.parse(day + totime[i]);
+        for (int i = 0; i < allocated_task_start_time.length; i++) {
+
+            Date date2 = format.parse(date_to_get_timeslots + " " + allocated_task_stop_time[i]);
 
             String totime_string = format2.format(date2);
 
-            for (int j = 0; j < intervals.size(); j++) {
-
-                if (format2.format(intervals.get(j)).equals(totime_string)) {
-                    Date date;
-                    if (i + 1 == start_time.length) {
-                        date = format.parse(setd2); // if its last time in the array set the date to end day time
+            for (Date all_day_slot : all_day_slots) {
+                if (format2.format(all_day_slot).equals(totime_string)) { //if time is already allocated
+                    Date free_slot_stop_time;
+                    if (i + 1 == allocated_task_start_time.length) {
+                        free_slot_stop_time = format.parse(day_end_time_string); // if end of all allocated time array, set the slot end time to day end time
 
                     } else {
 
-                        date = format.parse(day + start_time[i + 1]); // else set date to next task start time
+                        free_slot_stop_time = format.parse(date_to_get_timeslots + " " + allocated_task_start_time[i + 1]); // else set slot time to next task start time
                     }
 
-                    String time_string = format2.format(date);
+                    String free_slot_stop_time_string = format2.format(free_slot_stop_time);
 
-                    System.out.println("free time slots " + totime_string + " - " + time_string);
+                    free_timeSLOTS.add(totime_string + " - " + free_slot_stop_time_string);
                 }
-
             }
 
-            // --------------------------------------------------------------------------------------------------------------------------------
             // calculate duration between day start and day end time
             formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-            localDateTime_day_from = LocalDateTime.parse(day_from, formatter); // whole day format from string
-            localDateTime_day_to = LocalDateTime.parse(day_to, formatter); // whole day format from string
+            localDateTime_day_from = LocalDateTime.parse(date_time_day_begins, formatter); // whole day format from string
+            localDateTime_day_to = LocalDateTime.parse(date_time_day_ends, formatter); // whole day format from string
 
             day_diff = Duration.between(localDateTime_day_from, localDateTime_day_to); // duration for the whole day
 
@@ -120,37 +130,40 @@ public class Main {
 
             try {
 
-                LocalDateTime lDateTime1 = LocalDateTime.parse(day + start_time[i], formatter); // from time
+                LocalDateTime lDateTime1 = LocalDateTime.parse(date_to_get_timeslots + " " + allocated_task_start_time[i], formatter); // from time
                 // localdatetime
-                LocalDateTime lDateTime2 = LocalDateTime.parse(day + totime[i], formatter); // to time local date time
+                LocalDateTime lDateTime2 = LocalDateTime.parse(date_to_get_timeslots + " " + allocated_task_stop_time[i], formatter); // to time local date time
 
                 Duration diff = Duration.between(lDateTime1, lDateTime2); // duration between task from time and task to
                 // time
                 long temp = diff.toMillis(); // temporary value to hold diff converted to milliseconds
                 diff_mili = temp + diff_mili; // sum of all tasks duration for the day
 
-                String format_duration_string = String.format("%d hour(s) %02d minutes", diff.toHoursPart(),
+                format_duration_string = String.format("%d hour(s) %02d minutes", diff.toHoursPart(),
                         diff.toMinutesPart());
 
-                // System.out.println("duration of time " + i + " in hours and minute is " +
-                // format_duration_string);
-
             } catch (Exception e) {
-                // TODO: handle exception
+                System.out.println("An Error occured!-->" + e);
             }
-            // ----------------------------------------------------------------------------------------------------------------------------------
 
         }
 
-        Duration ddmili_duration = Duration.ofMillis(diff_mili); // milliseconds to duration
-        String format_duration_string = String.format("%d hour(s) %02d minutes", ddmili_duration.toHoursPart(),
+        // Output Tie slots available
+        System.out.println("\n\nFree time Slots Available Between " + time_day_begins + " to " + time_day_ends);
+        for (String free_timeSLOT : free_timeSLOTS) {
+            System.out.println(free_timeSLOT);
+        }
+        // Output the time taken by the allocated tasks
+        ddmili_duration = Duration.ofMillis(diff_mili); // milliseconds to duration
+        format_duration_string = String.format("%d hour(s) %02d minutes", ddmili_duration.toHoursPart(),
                 ddmili_duration.toMinutesPart());
-        System.out.println("sum of time taken by tasks is " + format_duration_string);
+        System.out.println("\n\nSum of time taken allocate tasks is " + format_duration_string);
 
+        //Display day duration and breaks
         long day_diff_mili = day_diff.toMillis() - ddmili_duration.toMillis();
-        Duration freetime_duration = Duration.ofMillis(day_diff_mili);
-        String free_duration_string = String.format("%d hour(s) %02d minutes", freetime_duration.toHoursPart(),
+        freetime_duration = Duration.ofMillis(day_diff_mili);
+        free_duration_string = String.format("%d hour(s) %02d minutes", freetime_duration.toHoursPart(),
                 freetime_duration.toMinutesPart());
-        System.out.println("whole day duration is " + day_diff_string + " free time is " + free_duration_string); // output
+        System.out.println("All day duration is " + day_diff_string + " and available Breaks duration " + free_duration_string); // output
     }
 }

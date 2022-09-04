@@ -1,6 +1,15 @@
 # java_timeslots
+<h2>Input</h2>
 <h3>Allocated Time: 07:00-09:00, 11:00-13:00, 14:00-16:00, 16:30-18:00</h3>
-
+<h3>Enter Date (e.g. 2022-09-01)?</h3>
+2022-09-01
+<br>
+<h3>What time does the day begins?  (e.g. 08:00)</h3>
+08:00
+<br>
+<h3>What time does the day end?  (e.g. 17:00)</h3>
+17:00
+<br>
 <h2>Output</h2>
 <br>       
 free time slots 06:00 AM - 07:00 AM
